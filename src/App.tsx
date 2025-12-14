@@ -1,35 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { getCoins, type Coin } from "./services/api";
+import "./index.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [coins, setCoins] = useState<Coin[]>([]);
+
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getCoins();
+      setCoins(data);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="container">
+      <h1>CryptoDash 🪙</h1>
+      <p> Top 100 Crypto currency prices</p>
+
+      {loading ? (
+        <p style={{ textAlign: "center" }}>Loading market data...</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Asset</th>
+              <th>Price</th>
+              <th>24h Change</th>
+              <th>Market Cap</th>
+            </tr>
+          </thead>
+          <tbody>
+            {coins.map((coin) => (
+              <tr key={coin.id}>
+                <td>
+                  <div className="coin-info">
+                    <img
+                      src={coin.image}
+                      alt={coin.name}
+                      className="coin-icon"
+                    />
+                    <span>{coin.name}</span>
+                    <span className="symbol">{coin.symbol}</span>
+                  </div>
+                </td>
+                <td>${coin.current_price.toLocaleString()}</td>
+                <td
+                  className={
+                    coin.price_change_percentage_24h > 0 ? "green" : "red"
+                  }
+                >
+                  {coin.price_change_percentage_24h.toFixed(2)}%
+                </td>
+                <td>${coin.market_cap.toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
